@@ -10,7 +10,9 @@ pipeline {
         }
     }
     environment {
-        QUAY_CLOUD_GOVERNANCE_REPOSITORY = credentials('QUAY_CLOUD_GOVERNANCE_REPOSITORY')
+        QUAY_CLOUD_GOVERNANCE_REPOSITORY = credentials('PRAGCHAU_QUAY_CLOUD_GOVERNANCE_REPOSITORY')
+        QUAY_USERNAME = credentials('PRAGCHAU_QUAY_USERNAME')
+        QUAY_PASSWORD = credentials('PRAGCHAU_QUAY_PASSWORD')
         AWS_ACCESS_KEY_ID_DELETE_PERF = credentials('cloud-governance-aws-access-key-id-delete-perf')
         AWS_SECRET_ACCESS_KEY_DELETE_PERF = credentials('cloud-governance-aws-secret-access-key-delete-perf')
         AWS_ACCESS_KEY_ID_DELETE_PSAP = credentials('cloud-governance-aws-access-key-id-delete-psap')
@@ -21,10 +23,17 @@ pipeline {
         contact2 = "yinsong@redhat.com"
     }
     stages {
-        stage('Checkout') { // Checkout (git clone ...) the projects repository
+        stage('Checkout') {
            steps {
                  checkout scm
            }
+        }
+        stage('Login to Quay.io') {
+            steps {
+                sh '''
+                    echo "${QUAY_PASSWORD}" | podman login quay.io -u "${QUAY_USERNAME}" --password-stdin
+                '''
+            }
         }
         stage('Initial Cleanup') {
             steps {

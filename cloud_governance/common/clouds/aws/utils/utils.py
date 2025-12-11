@@ -49,7 +49,9 @@ class Utils:
         """
         try:
             if tags_name == 'Tags':
-                client_method(Resources=resource_ids, Tags=tags)
+                filtered_tags = [tag for tag in tags if not tag.get('Key', '').startswith('aws:')]
+                if filtered_tags:
+                    client_method(Resources=resource_ids, Tags=filtered_tags)
         except Exception as e:
             logger.error(e)
 
