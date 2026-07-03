@@ -234,9 +234,9 @@ class NonClusterOperations:
                 ct_username = self._get_username_from_cloudtrail(
                     start_time=start_time, resource_id=resource_id,
                     resource_type=resource_type, end_time=end_time)
-                if ct_username and ct_username in self.iam_users:
-                    return ct_username
                 exclude = {self._automation_user} if self._automation_user else set()
+                if ct_username and ct_username in self.iam_users and ct_username not in exclude:
+                    return ct_username
                 iam_username = self.cloudtrail.get_username_from_resource_events(
                     resource_id=resource_id, iam_users=self.iam_users,
                     start_time=start_time, end_time=end_time,
@@ -249,7 +249,9 @@ class NonClusterOperations:
         @param tags:
         @return:
         """
-        check_tags = ['User', 'Project', 'Manager', 'Owner', 'Email']
+        check_tags = ['User', 'Project', 'Manager', 'Owner', 'Email', 'LaunchTime']
+        if self.input_tags:
+            check_tags.extend(key for key in self.input_tags if key not in check_tags)
         tag_count = 0
         if tags:
             for tag in tags:
